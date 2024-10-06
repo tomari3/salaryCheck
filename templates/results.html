@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <!-- Meta Tags -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Viewport Meta Tag for Mobile Responsiveness -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheckChecker - תוצאות</title>
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/output.css') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@100..900&family=Poppins:wght@100..900&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        /* Responsive Table */
+        .responsive-table {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Header -->
+    <header class="py-8 sm:py-12 gradient-bg text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
+                גלה את השכר האמיתי שלך
+            </h1>
+            <p class="text-lg sm:text-xl md:text-2xl mt-4 sm:mt-6">
+                בדוק את השכר המחושב שלך והשווה אותו לשכר שקיבלת
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 sm:py-12">
+        {% set months_hebrew = {
+            'January': 'ינואר',
+            'February': 'פברואר',
+            'March': 'מרץ',
+            'April': 'אפריל',
+            'May': 'מאי',
+            'June': 'יוני',
+            'July': 'יולי',
+            'August': 'אוגוסט',
+            'September': 'ספטמבר',
+            'October': 'אוקטובר',
+            'November': 'נובמבר',
+            'December': 'דצמבר'
+        } %}
+
+        {% set metric_labels = {
+            'Total Tip': 'טיפ כולל',
+            'Completion': 'השלמה',
+            'Extra Pay': 'תוספות שכר',
+            'Morning Extra Pay': 'תוספת שכר בוקר',
+            'Morning Hours Worked': 'שעות עבודה בבוקר',
+            'Hours Worked': 'סך שעות עבודה',
+            'Average Hourly Salary': 'שכר שעתי ממוצע'
+        } %}
+
+        {% set total_salary = totals | map(attribute='Value') | sum %}
+
+        <!-- Salary Card -->
+        <section class="mb-12 sm:mb-16">
+            <div class="relative max-w-4xl mx-auto px-4">
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl transform rotate-2 hidden sm:block"></div>
+                <div class="relative bg-white rounded-3xl p-8 sm:p-12 text-center card-shadow">
+                    <div class="mb-4 sm:mb-6">
+                        <h2 class="text-3xl sm:text-4xl font-semibold">
+                            השכר המשוער עבור
+                        </h2>
+                        <span>
+                            {% for month_str in months_included %}
+                                {% set month_parts = month_str.split(' ') %}
+                                {{ months_hebrew[month_parts[0]] }} {{ month_parts[1] }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    <p class="text-5xl sm:text-7xl font-bold text-green-500" id="salary-amount">
+                        ₪0
+                    </p>
+                    <p class="text-base sm:text-lg mt-4 sm:mt-6 text-gray-600">
+                        השווה לשכר שקיבלת. אם יש הבדל, מומלץ ליצור קשר עם מחלקת משאבי אנוש.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Metrics -->
+        <section class="mb-12 sm:mb-16">
+            <h2 class="text-3xl sm:text-4xl font-semibold mb-8 sm:mb-10 text-center">
+                נתונים מפורטים
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 px-4">
+                {% for item in totals %}
+                <div class="bg-white rounded-2xl p-6 sm:p-8 text-center card-shadow">
+                    <h3 class="text-xl sm:text-2xl font-medium mb-2 sm:mb-4">
+                        {{ metric_labels[item.Metric] }}
+                    </h3>
+                    <p class="text-4xl sm:text-5xl font-bold text-indigo-600">
+                        {{ item.Value | round(2) | intcomma }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Monthly Analysis -->
+        <section class="mb-12 sm:mb-16">
+            <h2 class="text-3xl sm:text-4xl font-semibold mb-8 sm:mb-10 text-center">
+                ניתוח חודשי
+            </h2>
+            <div class="responsive-table px-4">
+                <div class="overflow-x-auto rounded-3xl card-shadow">
+                    <table class="min-w-full bg-white">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                {% for header in ['חודש', 'טיפ מזומן', 'השלמה', 'תוספות שכר', 'שעות עבודה', 'שכר שעתי ממוצע', 'שכר כולל'] %}
+                                <th class="px-4 sm:px-6 py-2 sm:py-4 text-right text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                    {{ header }}
+                                </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200 text-xs sm:text-sm">
+                            {% for month in monthly_analysis %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap">{{ month.month_year_str }}</td>
+                                <td class="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap">{{ month['טיפ מזומן'] | round(2) | intcomma }}</td>
+                                <td class="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap">{{ month['השלמה'] | round(2) | intcomma }}</td>
+                                <td class="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap">{{ month['extra_pay'] | round(2) | intcomma }}</td>
+                                <td class="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap">{{ month.hours_worked | round(2) }}</td>
+                                <td class="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap">{{ month.average_hourly_salary | round(2) | intcomma }}</td>
+                                <td class="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap font-bold text-indigo-600">{{ (month['טיפ מזומן'] + month['extra_pay']) | round(2) | intcomma }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics Charts -->
+        {% if plot_files %}
+        <section class="mb-12 sm:mb-16">
+            <h2 class="text-3xl sm:text-4xl font-semibold mb-8 sm:mb-10 text-center">
+                מגמות
+            </h2>
+            <div class="grid grid-cols-1 gap-8 sm:gap-12 px-4">
+                <div class="bg-white rounded-3xl p-6 sm:p-8 card-shadow">
+                    <h3 class="text-2xl font-medium mb-4 sm:mb-6 text-center">
+                        שעות עבודה לאורך זמן
+                    </h3>
+                    <div class="relative">
+                        <canvas id="hoursWorkedChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl p-6 sm:p-8 card-shadow">
+                    <h3 class="text-2xl font-medium mb-4 sm:mb-6 text-center">
+                        שכר שעתי ממוצע לאורך זמן
+                    </h3>
+                    <div class="relative">
+                        <canvas id="averageSalaryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Salary Mismatch Check -->
+        <section class="mb-12 sm:mb-16">
+            <h2 class="text-3xl sm:text-4xl font-semibold mb-8 sm:mb-10 text-center" id="hr-message">
+                בדיקת התאמת שכר
+            </h2>
+            <div class="max-w-md mx-auto px-4">
+                <div class="bg-white rounded-3xl p-6 sm:p-8 card-shadow">
+                    <form action="#" method="post" id="salary-form">
+                        <label for="received_salary" class="block text-lg sm:text-xl font-medium mb-3 sm:mb-4">
+                            הכנס את השכר שקיבלת:
+                        </label>
+                        <input type="number" name="received_salary" id="received_salary" class="w-full p-3 sm:p-4 border border-gray-300 rounded-lg mb-4 sm:mb-6 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <button type="submit" class="w-full py-3 sm:py-4 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition duration-200">
+                            בדוק
+                        </button>
+                    </form>
+                    <div id="mismatch-message" class="mt-4 sm:mt-6 text-lg sm:text-xl font-semibold text-center"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Download Section -->
+        <section class="mb-12 sm:mb-16">
+            <h2 class="text-3xl sm:text-4xl font-semibold mb-8 sm:mb-10 text-center">
+                הורדת נתונים
+            </h2>
+            <div class="max-w-2xl mx-auto bg-white rounded-3xl p-6 sm:p-8 card-shadow px-4">
+                <form action="/download" method="post">
+                    <p class="text-lg sm:text-xl font-medium mb-4 sm:mb-6 text-center">
+                        בחר את החודשים שברצונך להוריד:
+                    </p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6 sm:mb-8">
+                        {% for month in monthly_analysis %}
+                        <div class="flex items-center">
+                            <input id="month-{{ loop.index }}" type="checkbox" name="months" value="{{ month.month_year_str }}" class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <label for="month-{{ loop.index }}" class="mr-2 sm:mr-3 text-sm sm:text-lg">{{ month.month_year_str }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="w-full py-3 sm:py-4 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition duration-200">
+                        הורד חודשים נבחרים
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-12 sm:mb-16 px-4">
+            <a href="/" class="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-gray-800 text-white font-bold rounded-lg hover:bg-gray-900 transition duration-200 w-full sm:w-auto">
+                העלה קובץ נוסף
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 sm:py-8 gradient-bg text-white">
+        <div class="container mx-auto text-center">
+            <p class="text-sm">
+                © 2023 CheckChecker. כל הזכויות שמורות.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Flowbite JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@latest/dist/flowbite.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Script -->
+    <script>
+        // Salary Amount Display
+        document.addEventListener('DOMContentLoaded', () => {
+            const salaryElement = document.getElementById('salary-amount');
+            const salaryValue = parseFloat('{{ total_salary | round(2) }}');
+
+            // Format the salary value with currency formatting
+            const formattedSalary = salaryValue.toLocaleString('he-IL', { style: 'currency', currency: 'ILS' });
+            salaryElement.textContent = formattedSalary;
+        });
+
+        // Salary Mismatch Check
+        document.getElementById('salary-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const receivedSalary = parseFloat(document.getElementById('received_salary').value);
+            const calculatedSalary = parseFloat('{{ total_salary | round(2) }}');
+            const messageDiv = document.getElementById('mismatch-message');
+
+            if (receivedSalary !== calculatedSalary) {
+                messageDiv.textContent = 'יש אי התאמה בין השכר המחושב לשכר שקיבלת. מומלץ ליצור קשר עם מחלקת משאבי אנוש.';
+                messageDiv.classList.remove('text-green-600');
+                messageDiv.classList.add('text-red-600');
+            } else {
+                messageDiv.textContent = 'השכר שקיבלת תואם לשכר המחושב.';
+                messageDiv.classList.remove('text-red-600');
+                messageDiv.classList.add('text-green-600');
+            }
+        });
+
+        // Charts
+        {% if plot_files %}
+        const months = [{% for month in monthly_analysis %}'{{ month.month_year_str }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+        const hoursWorkedData = [{% for month in monthly_analysis %}{{ month.hours_worked }}{% if not loop.last %}, {% endif %}{% endfor %}];
+        const averageSalaryData = [{% for month in monthly_analysis %}{{ month.average_hourly_salary }}{% if not loop.last %}, {% endif %}{% endfor %}];
+
+        // Hours Worked Chart
+        const ctx1 = document.getElementById('hoursWorkedChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'שעות עבודה',
+                    data: hoursWorkedData,
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1.5,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Average Salary Chart
+        const ctx2 = document.getElementById('averageSalaryChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'שכר שעתי ממוצע',
+                    data: averageSalaryData,
+                    backgroundColor: 'rgba(118, 75, 162, 0.2)',
+                    borderColor: 'rgba(118, 75, 162, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(118, 75, 162, 1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1.5,
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>

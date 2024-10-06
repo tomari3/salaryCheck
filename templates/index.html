@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <!-- Meta Tags -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>CheckChecker - העלה קובץ</title>
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/output.css') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Heebo:wght@100..900&display=swap"
+          rel="stylesheet">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+
+<!-- Main Container -->
+<div class="flex flex-col min-h-screen bg-amber-300 justify-center items-center w-full px-4 py-16 gap-20 sm:px-6 lg:px-24">
+    <h1 class="font-bold text-5xl md:text-7xl lg:text-[144px] text-gray-900 font-heebo text-center break-words">
+        אנחנו בטח לא פראיירים
+    </h1>
+
+    <!-- Upload Form -->
+    <form id="upload-form" class="flex flex-col justify-center items-center gap-4" action="/upload" method="post" enctype="multipart/form-data">
+        <!-- File Upload -->
+        <label for="file-upload" class="cursor-pointer">
+            <div class="bg-gray-900 rounded-full flex justify-between items-center px-4 py-4">
+                <div class="p-1 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+                    <div class="border-4 border-gray-900 bg-amber-300 w-12 h-12 rounded-full flex items-center justify-center">
+                        <!-- SVG Icon -->
+                        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-labelledby="title"
+                             aria-describedby="desc" role="img" class="w-4 h-4 text-gray-900">
+                            <title>Upload</title>
+                            <desc>A line styled icon from Orion Icon Library.</desc>
+                            <path d="M31 48V3M16 20L31 3l15 16"
+                                  stroke-width="6" stroke-miterlimit="10" stroke-linecap="round" stroke="currentColor"
+                                  fill="none" data-name="layer2" stroke-linejoin="miter"></path>
+                            <path d="M8 46v16h46V46" stroke-width="6" stroke-miterlimit="10"
+                                  stroke-linecap="round" stroke="currentColor" fill="none" data-name="layer1"
+                                  stroke-linejoin="miter"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex items-center flex-1 justify-center px-4 text-sm">
+                    <span class="text-amber-300 font-bold">בחר קובץ להעלאה</span>
+                </div>
+            </div>
+            <input type="file" name="file" id="file-upload" class="hidden" accept=".xls,.xlsx">
+        </label>
+        <!-- Display Selected File Name -->
+        <div id="file-name" class="text-gray-900 font-bold"></div>
+        <!-- Submit Button -->
+        <button class="text-gray-900 font-bold bg-amber-300 px-4 py-2 rounded-full hover:bg-amber-400" type="submit">
+            שלח לבדיקה
+        </button>
+    </form>
+</div>
+
+<!-- Flowbite JS -->
+<script src="https://cdn.jsdelivr.net/npm/flowbite@latest/dist/flowbite.min.js"></script>
+<!-- Custom JS -->
+<script>
+    const fileUpload = document.getElementById('file-upload');
+    const fileNameDisplay = document.getElementById('file-name');
+
+    fileUpload.addEventListener('change', function(){
+        const fileName = this.files[0]?.name || '';
+        fileNameDisplay.textContent = fileName ? `קובץ נבחר: ${fileName}` : '';
+    });
+</script>
+</body>
+</html>
